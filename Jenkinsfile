@@ -1,24 +1,22 @@
 pipeline {
-    agent any
-
-    tools {
-        maven "M3"
+  agent any
+  stages {
+    stage('Build') {
+      steps {
+        sh 'mvn -Dmaven.test.failure.ignore=true clean package'
+        archiveArtifacts 'target/hello-demo-*.jar'
+      }
     }
 
-    stages {
-        stage('Build') {
-            steps {
-                // git 'https://github.com/jglick/simple-maven-project-with-tests.git'
-                sh "mvn -Dmaven.test.failure.ignore=true clean package"
-            }
-
-        }
-        
-            stage('Test') {
-            steps {
-                sh "mvn test"
-            }
-
-        }
+    stage('Test') {
+      steps {
+        sh 'mvn test'
+        junit(testResults: 'target/surefire-reports/TEST-*.xml', keepLongStdio: true, keepProperties: true)
+      }
     }
+
+  }
+  tools {
+    maven 'M3'
+  }
 }
